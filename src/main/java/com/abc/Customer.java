@@ -38,7 +38,7 @@ public class Customer {
     }
 
     public String getStatement() {
-        StringBuilder statement = new StringBuilder("Statement for ").append(customerName)
+        StringBuilder statement = new StringBuilder("Statement for ").append(customerName);
 																	 .append("\n");
         double total = 0.0;
         for (Account a : accounts) {
@@ -50,7 +50,8 @@ public class Customer {
         statement.append("\nTotal In All Accounts ")
 				 .append(numberFormatter(total));
 		statement.append("\nNumber Of Accounts for ")
-				 .append(customerName + ": ")
+				 .append(customerName)
+				 .append(": ")
 				 .append( getNumberOfAccounts());
 		statement.append("\nTotal Interest Earned by ")
 				 .append(customerName)
