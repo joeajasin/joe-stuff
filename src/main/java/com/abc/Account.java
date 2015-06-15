@@ -91,6 +91,7 @@ public class Account implements IAccount{
     }  
 
 	// Returns sum of all transactions
+	@Override
 	public double sumTransactions() {
 		double amount = 0.0;
 		for (Transaction t: transactions)
