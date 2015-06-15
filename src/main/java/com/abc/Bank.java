@@ -10,7 +10,7 @@ public class Bank {
         customers = new ArrayList<Customer>();
     }
 
-    public void addCustomer(Customer customer) {
+    public void addCustomer(final Customer customer) {
         customers.add(customer);
     }
 
@@ -27,7 +27,7 @@ public class Bank {
 
     //Make sure correct plural of word is created based on the number passed in:
     //If number passed in is 1 just return the word otherwise add an 's' at the end
-    private String format(int number, String word) {
+    private String format(final int number, final String word) {
 		StringBuilder correctPlural = new StringBuilder();
 		correctPlural.append(number)
 		             .append(" ")
@@ -41,7 +41,8 @@ public class Bank {
             total += c.totalInterestEarned();
         return total;
     }
-
+    
+    /*
     public String getFirstCustomer() {
         try {
             customers = null;
@@ -51,4 +52,5 @@ public class Bank {
             return "Error";
         }
     }
+    */
 }
