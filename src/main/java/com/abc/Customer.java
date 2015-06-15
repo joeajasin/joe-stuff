@@ -1,21 +1,24 @@
 package com.abc;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import static java.lang.Math.abs;
 
 public class Customer {
-    private String name;
+    private String customerName;
     private List<Account> accounts;
 
-    public Customer(String name) {
-        this.name = name;
+    public Customer(String customerName) {
+        this.customerName = customerName;
         this.accounts = new ArrayList<Account>();
     }
 
-    public String getName() {
-        return name;
+    public String getCustomerName(){
+        return customerName;
     }
 
     public Customer openAccount(Account account) {
@@ -35,44 +38,67 @@ public class Customer {
     }
 
     public String getStatement() {
-        String statement = null;
-        statement = "Statement for " + name + "\n";
+        StringBuilder statement = new StringBuilder("Statement for ").append(customerName)
+																	 .append("\n");
         double total = 0.0;
         for (Account a : accounts) {
-            statement += "\n" + statementForAccount(a) + "\n";
+            statement.append("\n")
+					 .append(statementForAccount(a))
+					 .append("\n");
             total += a.sumTransactions();
         }
-        statement += "\nTotal In All Accounts " + toDollars(total);
-        return statement;
+        statement.append("\nTotal In All Accounts ")
+				 .append(numberFormatter(total));
+		statement.append("\nNumber Of Accounts for ")
+				 .append(customerName + ": ")
+				 .append( getNumberOfAccounts());
+		statement.append("\nTotal Interest Earned by ")
+				 .append(customerName)
+				 .append(": ")
+				 .append(numberFormatter(totalInterestEarned()));
+        return statement.toString();
     }
+	
+	private String getAccountName(Account a) {
+        String accountName = "";
 
-    private String statementForAccount(Account a) {
-        String s = "";
-
-       //Translate to pretty account type
         switch(a.getAccountType()){
-            case Account.CHECKING:
-                s += "Checking Account\n";
+            case Constant.CHECKING:
+                accountName = "Checking Account\n";
                 break;
-            case Account.SAVINGS:
-                s += "Savings Account\n";
+            case Constant.SAVINGS:
+                accountName = "Savings Account\n";
                 break;
-            case Account.MAXI_SAVINGS:
-                s += "Maxi Savings Account\n";
+            case Constant.MAXI_SAVINGS: 
+                accountName = "Maxi Savings Account\n";
                 break;
         }
+		return accountName;
+	}
 
+    private String statementForAccount(Account a) {
+		StringBuilder accountStatement = new StringBuilder(getAccountName(a));
+		
         //Now total up all the transactions
         double total = 0.0;
         for (Transaction t : a.transactions) {
-            s += "  " + (t.amount < 0 ? "withdrawal" : "deposit") + " " + toDollars(t.amount) + "\n";
+			accountStatement.append("  ")
+							.append((t.amount < 0 ? "withdrawal" : "deposit"))
+							.append(" ")
+							.append(numberFormatter(t.amount))
+							.append("\n");
             total += t.amount;
         }
-        s += "Total " + toDollars(total);
-        return s;
+		accountStatement.append("Total ")
+						.append(numberFormatter(total));
+        return accountStatement.toString();
     }
-
-    private String toDollars(double d){
-        return String.format("$%,.2f", abs(d));
-    }
+	
+	// Made this a class method because it only operates on the argument provided to it
+	public static String numberFormatter(double number) {
+		String formatterNumber = "";
+		NumberFormat defaultFormat = NumberFormat.getCurrencyInstance();
+		formatterNumber = defaultFormat.format(number);
+		return formatterNumber;
+	}
 }
