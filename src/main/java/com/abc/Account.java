@@ -1,73 +1,139 @@
 package com.abc;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
-public class Account {
+import java.util.Random;
+import static java.lang.Math.abs;
 
-    public static final int CHECKING = 0;
-    public static final int SAVINGS = 1;
-    public static final int MAXI_SAVINGS = 2;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-    private final int accountType;
-    public List<Transaction> transactions;
+public class Account implements IAccount{
+	private double balance;	
+	private int accountType;
+	private long accountNumber;
+	
+	// Tracks our transactions
+	public List<Transaction> transactions; 
+	
+	// Lock to protect transactions
+	private static Lock lock = new ReentrantLock(); 
 
-    public Account(int accountType) {
-        this.accountType = accountType;
-        this.transactions = new ArrayList<Transaction>();
+	// Initializes the account balance, account type, and auto generate the account number
+	public Account(final double balance, final int accountType) {
+		this.balance = balance;
+		this.accountType = accountType;
+		this.accountNumber = abs(new Random().nextLong());
+		this.transactions = new ArrayList<Transaction>();
+	}
+	
+	// Returns account balance
+	@Override
+	public double getBalance() {
+		return balance;
+	}
+
+	// Returns account type
+	@Override
+	public int getAccountType(){
+		return accountType;
+	}
+	
+	// Returns account number
+	@Override
+	public long getAccountNumber(){
+		return accountNumber;
+	}
+	
+	// Make a deposit into the account
+	@Override
+	public void deposit(final double amount) {
+		lock.lock();
+		try {
+			if (amount <= 0.0){
+				throw new IllegalArgumentException("Invalid amount for deposit : " + amount);
+			}else{
+				balance += amount;
+				transactions.add(new Transaction(amount));
+			}
+		} finally {
+			lock.unlock();
+		}	
+	}
+	
+	// Make withdrawal from the account
+	@Override
+	public void withdraw(final double amount) {
+		lock.lock();
+		try {
+			if (balance < amount) {
+			   throw new IllegalArgumentException("Insufficient funds for withdrawal : " + balance);
+		   }else {
+		   	    balance -= amount;
+				transactions.add(new Transaction(-amount));
+			}
+		} finally {
+			lock.unlock();
+		}	
+	}
+	
+	//Transfer funds from one account to another
+	@Override
+	public void transfer(final Account sourceAccount, final Account targetAccount, final double amount) {
+		lock.lock();
+		try {
+			sourceAccount.withdraw(amount);
+			targetAccount.deposit(amount); 
+		} finally {
+			lock.unlock();
+		}		 
+    }  
+
+	// Returns sum of all transactions
+	public double sumTransactions() {
+		double amount = 0.0;
+		for (Transaction t: transactions)
+			amount += t.amount;
+		return amount;
+	 }
+
+    // Calculate the interest rate for a given account type
+	@Override
+	public double interestEarned()  {
+		switch(getAccountType()){
+			case Constant.CHECKING: 
+				return getBalance() * Constant.ONE_PERCENT_RATE; 
+			case Constant.SAVINGS: 
+				if (getBalance() <= 1000)
+					return getBalance() * Constant.ONE_PERCENT_RATE; 
+				else
+					return 1 + (getBalance() - 1000) * Constant.TWO_PERCENT_RATE;  
+			case Constant.MAXI_SAVINGS: 
+                if (getBalance() <= 1000)
+                    return getBalance() *  Constant.TWO_PERCENT_RATE; 
+                if (getBalance() <= 2000)
+                    return 20 + (getBalance() - 1000) * Constant.FIVE_PERCENT_RATE;
+               return 70 + (getBalance() - 2000) * Constant.TEN_PERCENT_RATE;
+			default: 
+			   return getBalance() * Constant.ONE_PERCENT_RATE;
+		}
+	}
+
+    @Override
+	public boolean equals(Object obj){
+		if (this == obj) return true; 
+        if (!(obj instanceof Account)) return false;
+        Account other = (Account) obj;
+        return balance == other.getBalance() && 
+			   accountType == other.getAccountType() && 
+			   accountNumber == other.getAccountNumber();
     }
 
-    public void deposit(double amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("amount must be greater than zero");
-        } else {
-            transactions.add(new Transaction(amount));
-        }
-    }
-
-public void withdraw(double amount) {
-    if (amount <= 0) {
-        throw new IllegalArgumentException("amount must be greater than zero");
-    } else {
-        transactions.add(new Transaction(-amount));
+    @Override
+    public int hashCode() {
+        return (int)(31 * accountType + balance + accountNumber);
     }
 }
 
-    public double interestEarned() {
-        double amount = sumTransactions();
-        switch(accountType){
-            case SAVINGS:
-                if (amount <= 1000)
-                    return amount * 0.001;
-                else
-                    return 1 + (amount-1000) * 0.002;
-//            case SUPER_SAVINGS:
-//                if (amount <= 4000)
-//                    return 20;
-            case MAXI_SAVINGS:
-                if (amount <= 1000)
-                    return amount * 0.02;
-                if (amount <= 2000)
-                    return 20 + (amount-1000) * 0.05;
-                return 70 + (amount-2000) * 0.1;
-            default:
-                return amount * 0.001;
-        }
-    }
 
-    public double sumTransactions() {
-       return checkIfTransactionsExist(true);
-    }
-
-    private double checkIfTransactionsExist(boolean checkAll) {
-        double amount = 0.0;
-        for (Transaction t: transactions)
-            amount += t.amount;
-        return amount;
-    }
-
-    public int getAccountType() {
-        return accountType;
-    }
-
-}
