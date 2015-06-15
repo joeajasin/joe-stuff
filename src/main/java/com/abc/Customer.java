@@ -12,7 +12,7 @@ public class Customer {
     private String customerName;
     private List<Account> accounts;
 
-    public Customer(String customerName) {
+    public Customer(final String customerName) {
         this.customerName = customerName;
         this.accounts = new ArrayList<Account>();
     }
@@ -21,7 +21,7 @@ public class Customer {
         return customerName;
     }
 
-    public Customer openAccount(Account account) {
+    public Customer openAccount(final Account account) {
         accounts.add(account);
         return this;
     }
@@ -60,7 +60,7 @@ public class Customer {
         return statement.toString();
     }
 	
-	private String getAccountName(Account a) {
+	private String getAccountName(final Account a) {
         String accountName = "";
 
         switch(a.getAccountType()){
@@ -77,7 +77,7 @@ public class Customer {
 		return accountName;
 	}
 
-    private String statementForAccount(Account a) {
+    private String statementForAccount(final Account a) {
 		StringBuilder accountStatement = new StringBuilder(getAccountName(a));
 		
         //Now total up all the transactions
@@ -96,7 +96,7 @@ public class Customer {
     }
 	
 	// Made this a class method because it only operates on the argument provided to it
-	public static String numberFormatter(double number) {
+	public static String numberFormatter(final double number) {
 		String formatterNumber = "";
 		NumberFormat defaultFormat = NumberFormat.getCurrencyInstance();
 		formatterNumber = defaultFormat.format(number);
